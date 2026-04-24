@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grille Évaluation Pratique — Autorisation de Conduite R489</title>
+<style>
+  :root {
+    --bg: #f0ede8; --surface: #faf8f5; --surface2: #e8e4dd; --border: #d0cac0;
+    --ink: #1a1714; --muted: #8a8178; --accent: #1a3b6b; --red: #c0392b;
+    --red-light: #fdf0ee; --yellow: #c97d10; --green: #1a6b4a; --green-light: #e8f5ee;
+    --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-display: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-weight: 300; min-height: 100vh; }
+  header { background: var(--ink); padding: 0 20px; position: sticky; top: 0; z-index: 100; display: flex; align-items: stretch; justify-content: space-between; min-height: 56px; }
+  .header-brand { display: flex; flex-direction: column; justify-content: center; gap: 1px; padding: 10px 0; }
+  .logo { font-family: var(--font-display); font-weight: 800; font-size: 20px; color: #fff; letter-spacing: -0.5px; }
+  .logo span { color: #7ab3f5; }
+  .subtitle { font-family: var(--font-mono); font-size: 9px; color: #888; letter-spacing: 1.5px; text-transform: uppercase; }
+  .score-pill { background: #2a2622; padding: 8px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid #333; min-width: 112px; }
+  .score-num { font-family: var(--font-display); font-weight: 800; font-size: 20px; color: #fff; line-height: 1; transition: color 0.3s; }
+  .score-lbl { font-family: var(--font-mono); font-size: 8px; color: #666; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+  .page-shell { max-width: 1180px; margin: 0 auto 36px; }
+  .identity-block { background: var(--surface); border-bottom: 2px solid var(--ink); padding: 14px 20px; }
+  .identity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .field-input { background: var(--bg); border: 1.5px solid var(--border); border-radius: 4px; padding: 8px 10px; color: var(--ink); font-family: var(--font-body); font-size: 13px; outline: none; transition: border-color 0.2s; width: 100%; }
+  .field-input:focus { border-color: var(--accent); }
+  .identity-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; }
+  .identity-note { font-size: 12px; color: var(--muted); }
+  .save-indicator { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; }
+  .cat-block { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 20px; }
+  .cat-label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .cat-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cat-pill { background: var(--bg); border: 1.5px solid var(--border); border-radius: 4px; padding: 7px 14px; font-family: var(--font-mono); font-size: 11px; color: var(--muted); cursor: pointer; transition: all 0.15s; appearance: none; }
+  .cat-pill:hover { border-color: var(--accent); color: var(--accent); }
+  .cat-pill.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .progress-bar-wrap { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 8px 20px; display: flex; align-items: center; gap: 10px; }
+  .progress-label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); white-space: nowrap; }
+  .progress-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #1a3b6b; border-radius: 2px; transition: width 0.3s; width: 0%; }
+  .progress-count { font-family: var(--font-mono); font-size: 10px; color: var(--muted); white-space: nowrap; }
+  .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 14px 0; }
+  .status-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 8px; padding: 14px; }
+  .status-label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .status-value { margin-top: 8px; font-family: var(--font-display); font-size: 30px; line-height: 1; font-weight: 800; color: var(--ink); }
+  .status-sub { margin-top: 6px; font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .scale-legend { margin: 10px 14px 0; background: var(--surface); border: 1.5px solid var(--border); border-radius: 6px; padding: 10px 14px; }
+  .legend-title { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px; }
+  .legend-items { display: flex; flex-direction: column; gap: 5px; }
+  .legend-item { display: flex; align-items: center; gap: 10px; }
+  .legend-dot { width: 28px; height: 28px; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; font-size: 14px; color: #fff; }
+  .legend-desc { font-family: var(--font-body); font-size: 12px; color: var(--ink); }
+  .legend-desc strong { font-weight: 500; }
+  .section { margin: 10px 14px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .section-header { background: var(--ink); color: #fff; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
+  .section-left { display: flex; align-items: center; gap: 10px; }
+  .section-letter { font-family: var(--font-display); font-weight: 800; font-size: 22px; color: #7ab3f5; line-height: 1; }
+  .section-title { font-family: var(--font-display); font-weight: 600; font-size: 13px; }
+  .section-score-badge { font-family: var(--font-mono); font-size: 12px; background: rgba(255,255,255,0.1); padding: 3px 9px; border-radius: 20px; }
+  .criterion { padding: 11px 16px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+  .criterion:last-child { border-bottom: none; }
+  .crit-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .criterion-text { font-size: 13px; line-height: 1.45; color: var(--ink); flex: 1; }
+  .crit-id { font-family: var(--font-mono); font-size: 9px; color: var(--muted); background: var(--surface2); padding: 2px 6px; border-radius: 3px; white-space: nowrap; margin-top: 2px; }
+  .rating-row { display: flex; gap: 6px; }
+  .rating-btn { flex: 1; padding: 10px 2px; border: 1.5px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .btn-num { font-family: var(--font-display); font-weight: 800; font-size: 18px; line-height: 1; }
+  .btn-sub { font-family: var(--font-mono); font-weight: 400; font-size: 7px; letter-spacing: 0.2px; line-height: 1.3; text-align: center; opacity: 0.75; white-space: pre-line; }
+  .rating-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .rating-btn.sel-1 { background: #c0392b; border-color: #c0392b; color: #fff; }
+  .rating-btn.sel-2 { background: #e67e22; border-color: #e67e22; color: #fff; }
+  .rating-btn.sel-3 { background: #c97d10; border-color: #c97d10; color: #fff; }
+  .rating-btn.sel-4 { background: #27ae60; border-color: #27ae60; color: #fff; }
+  .rating-btn.sel-5 { background: #1a6b4a; border-color: #1a6b4a; color: #fff; }
+  .comment-input { background: var(--bg); border: 1.5px solid var(--border); border-radius: 4px; padding: 7px 10px; color: var(--ink); font-family: var(--font-body); font-size: 12px; outline: none; width: 100%; resize: none; height: 34px; transition: height 0.2s, border-color 0.2s; font-weight: 300; }
+  .comment-input:focus { border-color: var(--accent); height: 58px; }
+  .comment-input::placeholder { color: var(--border); }
+  .results-panel { margin: 10px 14px 24px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 6px; overflow: hidden; }
+  .results-header { background: var(--ink); color: #fff; padding: 10px 16px; font-family: var(--font-display); font-weight: 600; font-size: 13px; }
+  .results-body { padding: 14px 16px; }
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .result-row:last-child { border-bottom: none; }
+  .result-name { color: var(--muted); font-size: 12px; }
+  .result-val { font-family: var(--font-mono); font-weight: 500; font-size: 13px; }
+  .verdict-box { margin-top: 12px; border-radius: 6px; padding: 16px; text-align: center; border: 2px solid var(--border); background: var(--bg); transition: all 0.3s; }
+  .verdict-box.pass { background: var(--green-light); border-color: var(--green); }
+  .verdict-box.fail { background: var(--red-light); border-color: var(--red); }
+  .verdict-title { font-family: var(--font-display); font-weight: 800; font-size: 22px; margin-bottom: 4px; }
+  .verdict-detail { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 0.3px; line-height: 1.5; }
+  .actions-row { display: flex; gap: 8px; margin-top: 12px; }
+  .action-btn { flex: 1; padding: 13px 8px; border: none; border-radius: 6px; font-family: var(--font-display); font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .btn-pdf { background: var(--ink); color: #fff; }
+  .btn-pdf:hover { background: #2d2824; }
+  .btn-reset { background: var(--red-light); color: var(--red); border: 1.5px solid var(--red); font-size: 13px; }
+  .btn-reset:hover { background: var(--red); color: #fff; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 999; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: 10px; padding: 24px; max-width: 320px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .modal-title { font-family: var(--font-display); font-weight: 800; font-size: 18px; margin-bottom: 8px; }
+  .modal-body { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 8px; }
+  .modal-btn { flex: 1; padding: 11px; border: none; border-radius: 6px; font-family: var(--font-display); font-weight: 700; font-size: 13px; cursor: pointer; transition: opacity 0.15s; }
+  .modal-btn:hover { opacity: 0.85; }
+  .modal-cancel { background: var(--surface2); color: var(--ink); }
+  .modal-confirm { background: var(--red); color: #fff; }
+  #printRoot { display: none; }
+  .rating-btn.sel-na { background: #6c757d; border-color: #6c757d; color: #fff; }
+  .btn-na { font-family: var(--font-display); font-weight: 800; font-size: 11px; line-height: 1; }
+  .criterion.is-na { opacity: 0.55; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, .modal:focus-visible { outline: 2px solid #7ab3f5; outline-offset: 2px; }
+  body.printing-app > *:not(#printRoot) { display: none !important; }
+  body.printing-app #printRoot { display: block; }
+  @media print {
+    body { background: #fff; }
+    body > *:not(#printRoot) { display: none !important; }
+    #printRoot { display: block !important; }
+  }
+  @media (max-width: 860px) {
+    .identity-grid, .status-grid { grid-template-columns: 1fr 1fr; }
+    .actions-row { flex-direction: column; }
+  }
+  @media (max-width: 640px) {
+    header { padding: 0 14px; }
+    .page-shell { margin-bottom: 24px; }
+    .identity-grid, .status-grid { grid-template-columns: 1fr; }
+    .progress-bar-wrap, .identity-block, .cat-block { padding-left: 14px; padding-right: 14px; }
+    .section, .scale-legend, .results-panel { margin-left: 10px; margin-right: 10px; }
+    .rating-row { flex-wrap: wrap; }
+    .rating-btn { min-width: calc(33.333% - 4px); }
+    .identity-footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="modal-overlay" id="resetModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle" aria-describedby="resetModalBody" tabindex="-1">
+    <div class="modal-title" id="resetModalTitle">Réinitialiser le test ?</div>
+    <div class="modal-body" id="resetModalBody">Toutes les notes et commentaires seront effacés. Cette action est irréversible.</div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-cancel" id="resetCancelBtn" type="button">Annuler</button>
+      <button class="modal-btn modal-confirm" id="resetConfirmBtn" type="button">Réinitialiser</button>
+    </div>
+  </div>
+</div>
+
+<div id="printRoot" aria-hidden="true"></div>
+
+<header>
+  <div class="header-brand">
+    <div class="logo">Autorisation <span>de conduite</span></div>
+    <div class="subtitle">R489 — Chariots automoteurs à conducteur porté</div>
+  </div>
+  <div class="score-pill">
+    <div class="score-num" id="globalScore">—</div>
+    <div class="score-lbl">Moy. /5</div>
+  </div>
+</header>
+
+<main class="page-shell">
+  <div class="identity-block">
+    <div class="identity-grid">
+      <div class="field-group"><label class="field-label" for="trainee">Stagiaire</label><input class="field-input identity-input" type="text" id="trainee" placeholder="Nom Prénom" autocomplete="name"></div>
+      <div class="field-group"><label class="field-label" for="evalDate">Date</label><input class="field-input identity-input" type="date" id="evalDate"></div>
+      <div class="field-group"><label class="field-label" for="trainer">Formateur / Testeur</label><input class="field-input identity-input" type="text" id="trainer" placeholder="Nom Prénom"></div>
+      <div class="field-group"><label class="field-label" for="org">Organisme</label><input class="field-input identity-input" type="text" id="org" placeholder="Centre de formation" autocomplete="organization"></div>
+    </div>
+    <div class="identity-footer">
+      <div class="identity-note">Le brouillon reste disponible dans ce navigateur tant que vous ne réinitialisez pas la fiche.</div>
+      <div class="save-indicator" id="saveIndicator">Brouillon prêt</div>
+    </div>
+  </div>
+
+  <div class="cat-block">
+    <div class="cat-label">Catégorie d'engin</div>
+    <div class="cat-pills">
+      <button class="cat-pill active" data-cat="1A" type="button" aria-pressed="true">CAT. 1A — Transpalette</button>
+      <button class="cat-pill" data-cat="1B" type="button" aria-pressed="false">CAT. 1B — Gerbeur</button>
+      <button class="cat-pill" data-cat="3" type="button" aria-pressed="false">CAT. 3 — Frontal porte-à-faux</button>
+      <button class="cat-pill" data-cat="5" type="button" aria-pressed="false">CAT. 5 — Mât rétractable</button>
+      <button class="cat-pill" data-cat="6" type="button" aria-pressed="false">CAT. 6 — Poste élevable</button>
+    </div>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <span class="progress-label">Progression</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-count" id="progressCount">0 / 0 critères</span>
+  </div>
+
+  <section class="status-grid" aria-label="État de l'évaluation">
+    <div class="status-card">
+      <div class="status-label">Critères notés</div>
+      <div class="status-value" id="ratedCount">0</div>
+      <div class="status-sub">Éléments avec une note de 1 à 5.</div>
+    </div>
+    <div class="status-card">
+      <div class="status-label">Non évaluables</div>
+      <div class="status-value" id="naCount">0</div>
+      <div class="status-sub">Critères exclus du calcul de moyenne.</div>
+    </div>
+    <div class="status-card">
+      <div class="status-label">À compléter</div>
+      <div class="status-value" id="remainingCount">0</div>
+      <div class="status-sub">Critères encore non renseignés.</div>
+    </div>
+  </section>
+
+  <div class="scale-legend">
+    <div class="legend-title">Barème de notation (1 à 5)</div>
+    <div class="legend-items">
+      <div class="legend-item"><div class="legend-dot" style="background:#c0392b">1</div><div class="legend-desc"><strong>Non maîtrisé</strong> — Compétence absente ou dangereuse</div></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#e67e22">2</div><div class="legend-desc"><strong>Insuffisant</strong> — Nombreuses erreurs, sécurité non assurée</div></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#c97d10">3</div><div class="legend-desc"><strong>Partiel</strong> — En cours d'acquisition, à consolider</div></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#27ae60">4</div><div class="legend-desc"><strong>Satisfaisant</strong> — Maîtrisé avec quelques imperfections mineures</div></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#1a6b4a">5</div><div class="legend-desc"><strong>Maîtrisé</strong> — Exécution correcte, fluide et sécurisée</div></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6c757d;font-size:10px">N/É</div><div class="legend-desc"><strong>Non évaluable</strong> — Critère exclu du calcul de la moyenne</div></div>
+    </div>
+  </div>
+
+  <div id="evalContent"></div>
+
+  <div class="results-panel">
+    <div class="results-header">Résultats & Verdict</div>
+    <div class="results-body">
+      <div id="themeResults"></div>
+      <div class="verdict-box" id="verdictBox">
+        <div class="verdict-title" id="verdictTitle">—</div>
+        <div class="verdict-detail" id="verdictDetail">Complétez tous les critères pour obtenir le verdict</div>
+      </div>
+      <div class="actions-row">
+        <button class="action-btn btn-pdf" id="exportPdfBtn" type="button">Exporter en PDF</button>
+        <button class="action-btn btn-reset" id="openResetBtn" type="button">Réinitialiser</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+const SCALE = [
+  { v:1, label:'Non\nmaîtrisé', cls:'sel-1', color:'#c0392b' },
+  { v:2, label:'Insuffisant',   cls:'sel-2', color:'#e67e22' },
+  { v:3, label:'Partiel',       cls:'sel-3', color:'#c97d10' },
+  { v:4, label:'Satisfaisant',  cls:'sel-4', color:'#27ae60' },
+  { v:5, label:'Maîtrisé',      cls:'sel-5', color:'#1a6b4a' },
+];
+// Valeur spéciale pour "Non évaluable" — exclu du calcul
+const NA = 'NA';
+const STORAGE_KEY = 'autorisation-r489-draft-v2';
+const DRAFT_TTL_MS = 1000 * 60 * 60 * 24 * 30;
+const SCORE_TONES = {
+  high: '#1a3b6b',
+  mid: '#c97d10',
+  low: '#c0392b',
+  none: '#888',
+};
+
+const SECTIONS_BASE = [
+  { letter:"A", title:"Prise de poste & Vérifications", weight:30, criteria:[
+    {id:"A1", text:"Utiliser les documents : notice d'instructions et rapport de vérification périodique — savoir les exploiter"},
+    {id:"A2", text:"Procéder à une vérification visuelle complète de l'état général du chariot"},
+    {id:"A3", text:"Essais du bon fonctionnement des dispositifs de sécurité (freins, avertisseur, commandes)"},
+    {id:"A4", text:"Vérifier l'adéquation du chariot aux opérations à réaliser (plaque de capacité, équipement)"},
+  ]},
+  { letter:"B", title:"Conduite & Manœuvres", weight:55, criteria:[
+    {id:"B1", text:"Circuler à vide — marche avant et arrière, lignes droites et virages"},
+    {id:"B2", text:"Circuler en charge — marche avant et arrière, lignes droites et virages"},
+    {id:"B4", text:"Circuler en sécurité sur plan incliné et/ou dévers en charge"},
+    {id:"B5", text:"Prendre, déplacer et déposer au sol une charge palettisée — positionnement fourche, précision de dépose"},
+    {id:"B6", text:"Gerber et dégerber ≥ 3 charges en pile — apprécier les niveaux empilables, précision sans compromettre la stabilité"},
+    {id:"B7", text:"Stocker et déstocker 3 palettes à 3 niveaux d'un palettier (sol jusqu'à 3,30 m min.) — localiser, prendre/déposer sans heurts"},
+    {id:"B8", text:"Chargement/déchargement d'un véhicule — ≥ 3 charges, équilibrage de part et d'autre du plateau"},
+    {id:"B9", text:"Prise, transport et dépose d'une charge longue ou encombrante — méthode et moyens adaptés"},
+  ]},
+  { letter:"C", title:"Fin de poste & Entretien quotidien", weight:15, criteria:[
+    {id:"C1", text:"Vérifier les différents niveaux et identifier les manques éventuels"},
+    {id:"C2", text:"Effectuer les opérations d'entretien journalier (vitres, rétroviseurs, poste de conduite, organes de roulement)"},
+    {id:"C3", text:"Rendre compte des anomalies et dysfonctionnements sur tout support disponible"},
+  ]},
+];
+
+function buildSections({ removeIds = [], textOverrides = {} } = {}) {
+  const removed = new Set(removeIds);
+  return SECTIONS_BASE.map(section => ({
+    ...section,
+    criteria: section.criteria
+      .filter(crit => !removed.has(crit.id))
+      .map(crit => ({
+        ...crit,
+        text: textOverrides[crit.id] || crit.text,
+      })),
+  }));
+}
+
+const SECTIONS_CAT_1A = buildSections({
+  removeIds: ['B4', 'B6', 'B7', 'B9'],
+});
+
+const SECTIONS_CAT_1B = buildSections({
+  removeIds: ['B4', 'B9'],
+  textOverrides: {
+    B7: "Stocker et déstocker 3 palettes à 3 niveaux différents d'un palettier (du niveau du sol jusqu'à 2,90 m minimum) — localiser, prendre/déposer sans heurts",
+  },
+});
+
+const SECTIONS_CAT_3 = buildSections({
+  textOverrides: {
+    B4: "Circuler en sécurité, s'arrêter et redémarrer sur un plan incliné et/ou un dévers, en charge",
+    B7: "Stocker et déstocker 3 palettes à 3 niveaux différents d'un palettier (du niveau du sol jusqu'à 3,30 m minimum) — localiser, prendre/déposer sans heurts",
+    B8: "Chargement/déchargement d'un véhicule depuis le sol — au moins 3 charges, équilibrage de part et d'autre du plateau",
+  },
+});
+
+const SECTIONS_CAT_5 = buildSections({
+  removeIds: ['B4', 'B8', 'B9'],
+  textOverrides: {
+    B7: "Stocker et déstocker 4 palettes à 4 niveaux différents d'un palettier (du niveau du sol jusqu'à 6 m minimum) — localiser, prendre/déposer sans heurts",
+  },
+});
+
+const SECTIONS_CAT_6 = buildSections({
+  removeIds: ['B8', 'B9'],
+  textOverrides: {
+    B4: "Circuler à vide et en charge en allée réservée — marche avant / marche arrière, montée / descente à différents niveaux",
+    B6: "Constituer une palette par picking à plusieurs niveaux d'un palettier jusqu'à une hauteur (plancher) de 2,80 m minimum",
+    B7: "Manœuvre de secours — effectuer et faire effectuer une manœuvre de secours",
+  },
+});
+
+const GRILLES = {
+  "1A": { name: "Cat. 1A — Transpalettes à conducteur porté (H ≤ 1,20 m)",    sections: SECTIONS_CAT_1A },
+  "1B": { name: "Cat. 1B — Gerbeurs à conducteur porté (H > 1,20 m)",          sections: SECTIONS_CAT_1B },
+  "3":  { name: "Cat. 3 — Chariots frontaux en porte-à-faux (≤ 6T)",           sections: SECTIONS_CAT_3 },
+  "5":  { name: "Cat. 5 — Chariots à mât rétractable",                          sections: SECTIONS_CAT_5 },
+  "6":  { name: "Cat. 6 — Chariots à poste de conduite élevable (H > 1,20 m)", sections: SECTIONS_CAT_6 },
+};
+
+let currentCat = "1A", scores = {}, comments = {};
+const saveIndicator = document.getElementById('saveIndicator');
+const evalContent = document.getElementById('evalContent');
+const catPills = document.querySelector('.cat-pills');
+const resetModal = document.getElementById('resetModal');
+const modalDialog = resetModal.querySelector('.modal');
+const openResetBtn = document.getElementById('openResetBtn');
+const printRoot = document.getElementById('printRoot');
+let lastFocusedElement = null;
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function formatDateDisplay(dateValue) {
+  if (!dateValue || !/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return '—';
+  const [year, month, day] = dateValue.split('-');
+  return `${day}/${month}/${year}`;
+}
+
+function safeStorageGet(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch (err) {
+    console.error('Storage read error:', err);
+    saveIndicator.textContent = 'Brouillon indisponible';
+    return null;
+  }
+}
+
+function safeStorageSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (err) {
+    console.error('Storage write error:', err);
+    saveIndicator.textContent = 'Brouillon non sauvegardé';
+    return false;
+  }
+}
+
+function safeStorageRemove(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (err) {
+    console.error('Storage remove error:', err);
+  }
+}
+
+function getScoreAccent(avg) {
+  if (avg === null || avg === undefined) return SCORE_TONES.none;
+  if (avg >= 3) return SCORE_TONES.high;
+  if (avg >= 2.5) return SCORE_TONES.mid;
+  return SCORE_TONES.low;
+}
+
+function isValidCategory(cat) {
+  return Object.prototype.hasOwnProperty.call(GRILLES, cat);
+}
+
+function getIdentityData() {
+  return {
+    trainee: document.getElementById('trainee').value,
+    evalDate: document.getElementById('evalDate').value,
+    trainer: document.getElementById('trainer').value,
+    org: document.getElementById('org').value,
+  };
+}
+
+function saveDraft(label = 'Brouillon sauvegardé') {
+  const payload = {
+    currentCat,
+    scores,
+    comments,
+    identity: getIdentityData(),
+    updatedAt: new Date().toISOString(),
+    expiresAt: Date.now() + DRAFT_TTL_MS,
+  };
+  if (safeStorageSet(STORAGE_KEY, JSON.stringify(payload))) {
+    saveIndicator.textContent = label;
+  }
+}
+
+function restoreDraft() {
+  const raw = safeStorageGet(STORAGE_KEY);
+  if (!raw) {
+    document.getElementById('evalDate').valueAsDate = new Date();
+    return;
+  }
+  try {
+    const draft = JSON.parse(raw);
+    if (draft.expiresAt && Date.now() > draft.expiresAt) {
+      safeStorageRemove(STORAGE_KEY);
+      document.getElementById('evalDate').valueAsDate = new Date();
+      saveIndicator.textContent = 'Brouillon expiré';
+      return;
+    }
+    currentCat = isValidCategory(draft.currentCat) ? draft.currentCat : '1A';
+    scores = draft.scores || {};
+    comments = draft.comments || {};
+    const identity = draft.identity || {};
+    document.getElementById('trainee').value = identity.trainee || '';
+    document.getElementById('evalDate').value = identity.evalDate || '';
+    document.getElementById('trainer').value = identity.trainer || '';
+    document.getElementById('org').value = identity.org || '';
+    if (!document.getElementById('evalDate').value) document.getElementById('evalDate').valueAsDate = new Date();
+    syncCategoryButtons();
+    saveIndicator.textContent = draft.updatedAt ? `Brouillon restauré · ${new Date(draft.updatedAt).toLocaleString('fr-FR')}` : 'Brouillon restauré';
+  } catch (err) {
+    console.error('Restore error:', err);
+    safeStorageRemove(STORAGE_KEY);
+    document.getElementById('evalDate').valueAsDate = new Date();
+  }
+}
+
+function autoResizeTextarea(el) {
+  if (!el) return;
+  el.style.height = '34px';
+  el.style.height = Math.max(34, el.scrollHeight) + 'px';
+}
+
+function syncCategoryButtons() {
+  document.querySelectorAll('.cat-pill').forEach(p => {
+    const active = p.dataset.cat === currentCat;
+    p.classList.toggle('active', active);
+    p.setAttribute('aria-pressed', String(active));
+  });
+}
+
+function selectCat(cat) {
+  if (!isValidCategory(cat) || currentCat === cat) return;
+  currentCat = cat;
+  syncCategoryButtons();
+  renderEval();
+  saveDraft();
+}
+
+function renderRatingButtons(cur, isNA) {
+  const ratingBtns = SCALE.map(s => `
+    <button class="rating-btn ${cur === s.v ? s.cls : ''}" type="button" data-action="score" data-value="${s.v}" title="${s.label.replace('\n', ' ')}">
+      <span class="btn-num">${s.v}</span>
+      <span class="btn-sub">${s.label}</span>
+    </button>
+  `).join('');
+  const naBtn = `
+    <button class="rating-btn ${isNA ? 'sel-na' : ''}" type="button" data-action="na" style="flex:0.7;min-width:44px" title="Non évaluable — exclu du calcul">
+      <span class="btn-na">N/É</span>
+      <span class="btn-sub">Non\néval.</span>
+    </button>
+  `;
+  return ratingBtns + naBtn;
+}
+
+function renderEval() {
+  const grille = GRILLES[currentCat];
+  evalContent.innerHTML = '';
+  grille.sections.forEach(section => {
+    const sec = document.createElement('div'); sec.className = 'section';
+    sec.innerHTML = `<div class="section-header"><div class="section-left"><span class="section-letter">${section.letter}</span><span class="section-title">${section.title}</span></div><span class="section-score-badge" id="sscore-${section.letter}">— /5</span></div>`;
+    section.criteria.forEach(crit => {
+      const row = document.createElement('div');
+      const isNA = scores[crit.id] === NA;
+      row.className = 'criterion' + (isNA ? ' is-na' : '');
+      row.dataset.critId = crit.id;
+      const cur = scores[crit.id];
+      row.innerHTML = `
+        <div class="crit-header"><div class="criterion-text">${crit.text}</div><span class="crit-id">${crit.id}</span></div>
+        <div class="rating-row">${renderRatingButtons(cur, isNA)}</div>
+        <label class="sr-only" for="comment-${crit.id}">Observation ${crit.id}</label>
+        <textarea class="comment-input" id="comment-${crit.id}" data-crit-id="${crit.id}" placeholder="Observation…">${escapeHtml(comments[crit.id] || '')}</textarea>`;
+      sec.appendChild(row);
+    });
+    evalContent.appendChild(sec);
+  });
+  document.querySelectorAll('.comment-input').forEach(autoResizeTextarea);
+  updateResults();
+}
+
+function updateCriterionRow(id) {
+  const row = evalContent.querySelector(`[data-crit-id="${id}"]`);
+  if (!row) return;
+  const currentValue = scores[id];
+  const isNA = currentValue === NA;
+  row.classList.toggle('is-na', isNA);
+  row.querySelectorAll('[data-action="score"]').forEach(button => {
+    const scoreValue = Number(button.dataset.value);
+    const scale = SCALE.find(s => s.v === scoreValue);
+    button.classList.toggle(scale.cls, currentValue === scoreValue);
+  });
+  const naButton = row.querySelector('[data-action="na"]');
+  if (naButton) naButton.classList.toggle('sel-na', isNA);
+}
+
+function setScore(id, val) {
+  scores[id] = val;
+  updateCriterionRow(id);
+  updateResults();
+  saveDraft();
+}
+
+function toggleNA(id) {
+  scores[id] = scores[id] === NA ? undefined : NA;
+  updateCriterionRow(id);
+  updateResults();
+  saveDraft();
+}
+
+function setComment(id, val) {
+  comments[id] = val;
+  autoResizeTextarea(document.getElementById(`comment-${id}`));
+  saveDraft();
+}
+
+function calcResults() {
+  const grille = GRILLES[currentCat]; const allIds = [];
+  grille.sections.forEach(s => s.criteria.forEach(c => allIds.push(c.id)));
+  // Un critère est "traité" s'il a une note OU s'il est marqué N/É
+  const answered = allIds.filter(id => scores[id] !== undefined);
+  const rated = allIds.filter(id => scores[id] !== undefined && scores[id] !== NA);
+  const naIds = allIds.filter(id => scores[id] === NA);
+  let sectionData = [], wSum = 0, wTotal = 0, hasOne = false;
+  grille.sections.forEach(section => {
+    const cids = section.criteria.map(c => c.id);
+    const aIds = cids.filter(id => scores[id] !== undefined && scores[id] !== NA);
+    const sScores = aIds.map(id => scores[id]);
+    if (sScores.includes(1)) hasOne = true;
+    const avg = sScores.length > 0 ? sScores.reduce((a, b) => a + b, 0) / sScores.length : null;
+    const naCount = cids.filter(id => scores[id] === NA).length;
+    sectionData.push({ letter: section.letter, title: section.title, weight: section.weight, avg, naCount });
+    if (avg !== null) { wSum += avg * section.weight; wTotal += section.weight; }
+  });
+  const globalAvg = wTotal > 0 ? wSum / wTotal : null;
+  const allScored = answered.length === allIds.length;
+  let pass = false, failReasons = [];
+  if (allScored) {
+    if (globalAvg === null) failReasons.push('aucun critère noté');
+    if (globalAvg !== null && globalAvg < 3) failReasons.push(`moyenne globale ${globalAvg.toFixed(2)}/5 < 3/5`);
+    if (hasOne) failReasons.push('au moins un critère noté 1');
+    sectionData.forEach(sd => { if (sd.avg !== null && sd.avg < 2.5) failReasons.push(`thème ${sd.letter} : ${sd.avg.toFixed(1)}/5 < 2,5/5`); });
+    pass = failReasons.length === 0;
+  }
+  return {
+    sectionData, globalAvg, allScored, pass, failReasons,
+    answered: answered.length, total: allIds.length,
+    rated: rated.length, naCount: naIds.length, remaining: allIds.length - answered.length,
+  };
+}
+
+function updateResults() {
+  const { sectionData, globalAvg, allScored, pass, failReasons, answered, total, rated, naCount, remaining } = calcResults();
+  const pct = total > 0 ? (answered / total) * 100 : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressCount').textContent = `${answered} / ${total} critères`;
+  document.getElementById('ratedCount').textContent = rated;
+  document.getElementById('naCount').textContent = naCount;
+  document.getElementById('remainingCount').textContent = remaining;
+  sectionData.forEach(sd => {
+    const badge = document.getElementById(`sscore-${sd.letter}`);
+    if (badge) { badge.textContent = sd.avg !== null ? sd.avg.toFixed(1) + ' /5' : '— /5'; badge.style.color = getScoreAccent(sd.avg); }
+  });
+  const hb = document.getElementById('globalScore');
+  hb.textContent = globalAvg !== null ? globalAvg.toFixed(1) : '—';
+  hb.style.color = globalAvg !== null ? getScoreAccent(globalAvg) : '#fff';
+  const gc = (avg) => avg === null ? 'var(--muted)' : getScoreAccent(avg);
+  document.getElementById('themeResults').innerHTML = sectionData.map(sd => `<div class="result-row"><span class="result-name">${sd.letter} — ${sd.title} <span style="font-size:10px">(${sd.weight}%)</span></span><span class="result-val" style="color:${gc(sd.avg)}">${sd.avg !== null ? sd.avg.toFixed(1) + ' /5' : '—'}</span></div>`).join('') + `<div class="result-row" style="border-top:2px solid var(--ink);margin-top:2px;padding-top:10px;"><span class="result-name" style="font-weight:500;color:var(--ink)">Moyenne globale</span><span class="result-val" style="font-size:16px;color:${gc(globalAvg)}">${globalAvg !== null ? globalAvg.toFixed(2) + ' /5' : '—'}</span></div>`;
+  const vb = document.getElementById('verdictBox'), vt = document.getElementById('verdictTitle'), vd = document.getElementById('verdictDetail');
+  if (!allScored) { vb.className = 'verdict-box'; vt.textContent = 'En attente…'; vt.style.color = 'var(--muted)'; vd.textContent = `${total - answered} critère(s) non encore renseigné(s)`; }
+  else if (pass && globalAvg !== null) { vb.className = 'verdict-box pass'; vt.textContent = '✅ REÇU'; vt.style.color = 'var(--green)'; vd.textContent = `Moyenne ${globalAvg.toFixed(2)}/5 — Toutes les conditions sont remplies`; }
+  else { vb.className = 'verdict-box fail'; vt.textContent = '❌ ÉCHEC'; vt.style.color = 'var(--red)'; vd.textContent = 'Motif(s) : ' + failReasons.join(' · '); }
+}
+
+function getFocusableModalElements() {
+  return Array.from(resetModal.querySelectorAll('button'));
+}
+
+function handleModalKeydown(event) {
+  if (event.key === 'Escape') {
+    closeModal();
+    return;
+  }
+  if (event.key !== 'Tab') return;
+  const focusables = getFocusableModalElements();
+  if (!focusables.length) return;
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+function openModal() {
+  lastFocusedElement = document.activeElement;
+  resetModal.classList.add('open');
+  resetModal.setAttribute('aria-hidden', 'false');
+  modalDialog.addEventListener('keydown', handleModalKeydown);
+  document.getElementById('resetCancelBtn').focus();
+}
+
+function closeModal() {
+  resetModal.classList.remove('open');
+  resetModal.setAttribute('aria-hidden', 'true');
+  modalDialog.removeEventListener('keydown', handleModalKeydown);
+  if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
+}
+
+function confirmReset() {
+  scores = {}; comments = {};
+  ['trainee', 'trainer', 'org'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('evalDate').valueAsDate = new Date();
+  currentCat = '1A';
+  syncCategoryButtons();
+  safeStorageRemove(STORAGE_KEY);
+  closeModal();
+  renderEval();
+  saveIndicator.textContent = 'Brouillon effacé';
+}
+
+function scoreColor(v) {
+  if (v === NA) return '#6c757d';
+  if (v === null || v === undefined) return '#d0cac0';
+  return SCALE.find(s => s.v === v)?.color || '#d0cac0';
+}
+
+function buildPrintMarkup() {
+  const grille = GRILLES[currentCat];
+  const { sectionData, globalAvg, allScored, pass, failReasons } = calcResults();
+  const trainee = escapeHtml(document.getElementById('trainee').value || '—');
+  const trainer = escapeHtml(document.getElementById('trainer').value || '—');
+  const org = escapeHtml(document.getElementById('org').value || '—');
+  const date = formatDateDisplay(document.getElementById('evalDate').value);
+  const gc = (avg) => avg === null ? '#999' : getScoreAccent(avg);
+  const verdictClass = allScored ? (pass ? 'pass' : 'fail') : 'pending';
+  const verdictTitle = allScored ? (pass ? '✅ REÇU' : '❌ ÉCHEC') : 'En cours';
+  const verdictDetail = allScored
+    ? (pass && globalAvg !== null ? `Moyenne ${globalAvg.toFixed(2)}/5` : 'Motif : ' + failReasons.join(', '))
+    : 'Critères manquants';
+
+  const sectionsMarkup = grille.sections.map(section => {
+    const sd = sectionData.find(s => s.letter === section.letter);
+    const critRows = section.criteria.map(crit => {
+      const v = scores[crit.id]; const comment = comments[crit.id] || '';
+      const chipLabel = v === NA ? 'N/É' : (v !== undefined ? v : '·');
+      return `<tr><td class="pz-crit-id-cell">${crit.id}</td><td class="pz-crit-text-cell">${escapeHtml(crit.text)}${v === NA ? '<span class="pz-inline-note">(non évaluable)</span>' : ''}${comment ? `<div class="pz-comment">Observation : ${escapeHtml(comment)}</div>` : ''}</td><td class="pz-crit-score-cell"><div class="pz-score-chip" style="background:${scoreColor(v)}">${chipLabel}</div></td></tr>`;
+    }).join('');
+    return `
+      <section class="pz-section">
+        <div class="pz-sec-row">${section.letter} — ${section.title}<span>${sd?.avg != null ? sd.avg.toFixed(1) + ' /5' : '—'}</span></div>
+        <table class="pz-table">
+          <thead><tr><th class="col-ref">Réf.</th><th>Critère d'évaluation</th><th class="col-note">Note</th></tr></thead>
+          <tbody>${critRows}</tbody>
+        </table>
+      </section>
+    `;
+  }).join('');
+
+  const resultsRows = sectionData.map(sd => `<div class="pz-result-row"><span class="pz-result-name">${sd.letter} — ${sd.title}</span><span class="pz-result-val" style="color:${gc(sd.avg)}">${sd.avg !== null ? sd.avg.toFixed(1) + ' /5' : '—'}</span></div>`).join('') + `<div class="pz-result-row" style="border-top:1.5px solid #111;margin-top:3px;padding-top:3px;"><span class="pz-result-name" style="font-weight:700;color:#111">Moyenne globale</span><span class="pz-result-val" style="color:${gc(globalAvg)};font-size:10px">${globalAvg !== null ? globalAvg.toFixed(2) + ' /5' : '—'}</span></div>`;
+
+  return `
+<title>Autorisation de conduite R489</title>
+<style>
+  @page { size: A4; margin: 12mm; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #111; margin: 0; }
+  .print-page { font-size: 11px; }
+  .pz-header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 6px; border-bottom: 2px solid #111; margin-bottom: 10px; }
+  .pz-logo { font-size: 20px; font-weight: 900; line-height: 1; }
+  .pz-subtitle { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .pz-score-box { text-align: right; }
+  .pz-score-big { font-size: 26px; font-weight: 900; line-height: 1; }
+  .pz-score-sub { font-size: 8px; color: #777; text-transform: uppercase; letter-spacing: 1px; }
+  .pz-meta { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; margin: 12px 0 14px; padding: 12px; background: #f6f7fa; border: 1px solid #d6dbe4; border-radius: 8px; }
+  .pz-meta-label { font-size: 8px; text-transform: uppercase; letter-spacing: 1.2px; color: #6d7582; margin-bottom: 4px; }
+  .pz-meta-value { font-size: 16px; font-weight: 900; line-height: 1.25; }
+  .pz-section { margin-bottom: 12px; page-break-inside: avoid; }
+  .pz-sec-row { display: flex; justify-content: space-between; align-items: center; background: #f3f4f6; padding: 5px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; }
+  .pz-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .pz-table thead tr { background: #111; color: #fff; }
+  .pz-table thead th { padding: 5px 6px; font-size: 8px; text-align: left; text-transform: uppercase; }
+  .pz-table .col-ref { width: 34px; }
+  .pz-table .col-note { width: 42px; text-align: center; }
+  .pz-table td { padding: 5px 6px; border-bottom: 1px solid #ececec; vertical-align: top; }
+  .pz-crit-id-cell { font-size: 8px; color: #9aa1ab; font-weight: 700; }
+  .pz-crit-text-cell { font-size: 9px; line-height: 1.35; }
+  .pz-inline-note { font-size: 7px; color: #6c757d; font-style: italic; margin-left: 4px; }
+  .pz-comment { font-size: 8px; color: #666; font-style: italic; margin-top: 3px; }
+  .pz-crit-score-cell { text-align: center; }
+  .pz-score-chip { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; border-radius: 3px; font-size: 9px; font-weight: 900; color: #fff; }
+  .pz-bottom { display: flex; gap: 16px; align-items: flex-start; margin-top: 16px; padding-top: 8px; border-top: 2px solid #111; }
+  .pz-results { flex: 1; }
+  .pz-results-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #555; margin-bottom: 5px; }
+  .pz-result-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #eee; font-size: 9px; }
+  .pz-result-name { color: #555; }
+  .pz-result-val { font-weight: 700; white-space: nowrap; margin-left: 8px; }
+  .pz-verdict { padding: 10px 14px; border-radius: 4px; text-align: center; min-width: 118px; }
+  .pz-verdict.pass { background: #e8f5ee; border: 2px solid #1a6b4a; }
+  .pz-verdict.fail { background: #fdf0ee; border: 2px solid #c0392b; }
+  .pz-verdict.pending { background: #f4f4f4; border: 2px solid #ccc; }
+  .pz-verdict-title { font-size: 16px; font-weight: 900; line-height: 1; }
+  .pz-verdict-detail { font-size: 8px; color: #666; margin-top: 4px; line-height: 1.4; max-width: 150px; }
+</style>
+<div class="print-page">
+  <div class="pz-header">
+    <div>
+      <div class="pz-logo">Autorisation de conduite — R489</div>
+      <div class="pz-subtitle">Grille d'évaluation pratique · ${grille.name}</div>
+    </div>
+    <div class="pz-score-box">
+      <div class="pz-score-big" style="color:${gc(globalAvg)}">${globalAvg !== null ? globalAvg.toFixed(1) : '—'}</div>
+      <div class="pz-score-sub">Moyenne /5</div>
+    </div>
+  </div>
+  <div class="pz-meta">
+    <div><div class="pz-meta-label">Stagiaire</div><div class="pz-meta-value">${trainee}</div></div>
+    <div><div class="pz-meta-label">Date</div><div class="pz-meta-value">${date}</div></div>
+    <div><div class="pz-meta-label">Formateur</div><div class="pz-meta-value">${trainer}</div></div>
+    <div><div class="pz-meta-label">Organisme</div><div class="pz-meta-value">${org}</div></div>
+  </div>
+  ${sectionsMarkup}
+  <div class="pz-bottom">
+    <div class="pz-results">
+      <div class="pz-results-title">Synthèse par thème</div>
+      ${resultsRows}
+    </div>
+    <div class="pz-verdict ${verdictClass}">
+      <div class="pz-verdict-title">${verdictTitle}</div>
+      <div class="pz-verdict-detail">${verdictDetail}</div>
+    </div>
+  </div>
+`;
+}
+
+function cleanupPrintMode() {
+  document.body.classList.remove('printing-app');
+  printRoot.innerHTML = '';
+  printRoot.setAttribute('aria-hidden', 'true');
+}
+
+async function exportPDF() {
+  try {
+    printRoot.innerHTML = buildPrintMarkup();
+    printRoot.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('printing-app');
+    window.print();
+  } catch (e) {
+    console.error('Print error:', e);
+    alert('Erreur export PDF : ' + e.message);
+  }
+}
+
+document.querySelectorAll('.identity-input').forEach(input => {
+  input.addEventListener('input', () => saveDraft());
+  input.addEventListener('change', () => saveDraft());
+});
+
+catPills.addEventListener('click', event => {
+  const button = event.target.closest('.cat-pill');
+  if (!button) return;
+  selectCat(button.dataset.cat);
+});
+
+evalContent.addEventListener('click', event => {
+  const button = event.target.closest('.rating-btn');
+  if (!button) return;
+  const row = button.closest('[data-crit-id]');
+  if (!row) return;
+  const id = row.dataset.critId;
+  if (button.dataset.action === 'na') toggleNA(id);
+  if (button.dataset.action === 'score') setScore(id, Number(button.dataset.value));
+});
+
+evalContent.addEventListener('input', event => {
+  const textarea = event.target.closest('.comment-input');
+  if (!textarea) return;
+  setComment(textarea.dataset.critId, textarea.value);
+});
+
+openResetBtn.addEventListener('click', openModal);
+document.getElementById('resetCancelBtn').addEventListener('click', closeModal);
+document.getElementById('resetConfirmBtn').addEventListener('click', confirmReset);
+document.getElementById('exportPdfBtn').addEventListener('click', exportPDF);
+resetModal.addEventListener('click', event => {
+  if (event.target === resetModal) closeModal();
+});
+window.addEventListener('afterprint', cleanupPrintMode);
+
+restoreDraft();
+syncCategoryButtons();
+renderEval();
+</script>
+</body>
+</html>
